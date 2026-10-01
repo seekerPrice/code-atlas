@@ -23,6 +23,8 @@ jobs:
         if: runner.os != 'Windows'
       - run: npm run check
         if: runner.os == 'Windows'
+      - run: node --test tests/folder-picker.test.mjs tests/folder-picker-ui.test.mjs
+        if: runner.os == 'Windows'
       - run: npm run build
         if: runner.os == 'Windows'
       - run: node scripts/release.mjs

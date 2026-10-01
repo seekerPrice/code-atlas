@@ -1,6 +1,6 @@
 {
   "name": "code-atlas",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local code reader and learning companion for Codex",
   "private": true,
   "license": "MIT",

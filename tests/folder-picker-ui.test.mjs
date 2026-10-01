@@ -25,10 +25,10 @@ async function setup(t,{available=true,choose=async()=>Response.json({path:'/tes
   return {w,opened,picks,button:()=>w.document.querySelector('#choose-native-folder')};
 }
 
-test('Choose in Finder opens the selected project and suppresses repeated clicks',async t=>{
+test('Choose a folder opens the selected project and suppresses repeated clicks',async t=>{
   let finish;
   const {w,opened,picks,button}=await setup(t,{choose:()=>new Promise(resolve=>{finish=resolve;})});
-  assert.ok(button(),'native chooser is offered');button().click();button().click();
+  assert.ok(button(),'native chooser is offered');assert.equal(button().textContent.trim(),'Choose a folder');button().click();button().click();
   assert.equal(button().disabled,true);assert.equal(picks.length,1);
   finish(Response.json({path:'/test/my project',cancelled:false}));await pause();
   assert.deepEqual(opened,[{path:'/test/my project'}]);

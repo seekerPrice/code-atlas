@@ -66,7 +66,7 @@ test('native adapter preserves spaces and quotes in a selected folder path',asyn
   const {chooseNativeFolder}=await import('../server/folder-picker.mjs');
   const folder=await mkdtemp(path.join(os.tmpdir(),"atlas picker ' "));
   t.after(()=>rm(folder,{recursive:true,force:true}));
-  assert.equal(await chooseNativeFolder({platform:'darwin',run:async()=>({stdout:folder+'\n'})}),folder);
+  assert.equal(await chooseNativeFolder({platform:process.platform==='win32'?'win32':'darwin',run:async()=>({stdout:folder+'\n'})}),folder);
   assert.equal(await chooseNativeFolder({platform:'darwin',run:async()=>({stdout:'\n'})}),null);
 });
 
@@ -74,4 +74,28 @@ test('native adapter rejects unsupported platforms and reports launch failures w
   const {chooseNativeFolder}=await import('../server/folder-picker.mjs');
   await assert.rejects(chooseNativeFolder({platform:'linux',run:()=>assert.fail('must not launch')}),/macOS/);
   await assert.rejects(chooseNativeFolder({platform:'darwin',run:async()=>{throw new Error('launch failed');}}),/folder list|folder path/);
+});
+
+
+test('Windows picker preserves drive and network paths, Unicode, spaces and cancellation',async()=>{
+  const {chooseNativeFolder}=await import('../server/folder-picker.mjs');
+  for(const folder of ['C:\\Projects\\你好 app', '\\\\server\\share\\my project']){
+    let checked;
+    const result=await chooseNativeFolder({platform:'win32',inspect:async selected=>{checked=selected;return {isDirectory:()=>true};},run:async(command,args,options)=>{
+      assert.match(command,/powershell.exe$/i);
+      assert.ok(args.includes('-STA'));
+      assert.ok(args.includes('-NoProfile'));
+      assert.equal(options.windowsHide,true);
+      return {stdout:folder+'\r\n'};
+    }});
+    assert.equal(result,folder);assert.equal(checked,folder);
+  }
+  assert.equal(await chooseNativeFolder({platform:'win32',run:async()=>({stdout:''})}),null);
+});
+
+test('Windows picker rejects relative paths and files',async()=>{
+  const {chooseNativeFolder}=await import('../server/folder-picker.mjs');
+  for(const folder of ['relative', 'C:\\file.txt']){
+    await assert.rejects(chooseNativeFolder({platform:'win32',run:async()=>({stdout:folder}),inspect:async()=>({isDirectory:()=>false})}),/folder list|folder path/);
+  }
 });

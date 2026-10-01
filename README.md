@@ -18,7 +18,7 @@ Open [http://127.0.0.1:4317](http://127.0.0.1:4317). On macOS, `Start Code Atlas
 
 Click **Explore an example** to read Tiny Tasks. For your own project, click **Open a project** and select its source folder. Code Atlas indexes supported text files; it does not install dependencies or run the opened project. Use the file explorer, entry candidates, function links, reading path, feature search, and workspace map to explore without AI access. Click a function or select lines to ask Codex for an explanation. The Review, Improve, Verify, Practice, and Teach back modes guide deeper work.
 
-On macOS, **Choose in Finder** opens the system folder picker and loads the project you select. Cancelling keeps your current project open. You can also browse the folder list or enter a path; these options remain available on other platforms and if the native picker cannot open.
+On macOS and Windows, **Choose a folder** opens the system folder picker and loads the project you select. Cancelling keeps your current project open. You can also browse the folder list or enter a path; these options remain available on other platforms and if the native picker cannot open.
 
 [![Watch the Code Atlas demo](docs/demo/poster.jpg)](docs/demo/code-atlas-demo.mp4)
 
@@ -54,7 +54,7 @@ Code Atlas resolves common JavaScript and TypeScript imports, re-exports, functi
 
 Git review requires a repository with a HEAD commit and its root folder open. It supports working tree, staged, and unstaged diffs; renames appear as deletion and addition. The app does not perform a complete security audit, fix findings, or run discovered tests. A saved answer can become stale after a source edit; refresh or ask again.
 
-The **Follow VS Code** theme reads locally installed VS Code appearance settings where supported and falls back to a built-in theme. Theme import currently supports the standard macOS VS Code location. Other platforms can use the built-in themes. The full test suite runs in CI on macOS and Linux; Windows has install, build, and static release checks but has not been fully validated for runtime behavior. Browser combinations beyond those checked locally have not been verified.
+The **Follow VS Code** theme reads locally installed VS Code appearance settings where supported and falls back to a built-in theme. Theme import currently supports the standard macOS VS Code location. Other platforms can use the built-in themes. The full test suite runs in CI on macOS and Linux; Windows has install, build, static release checks, and folder-picker API/UI tests. Native Windows dialog interaction and full Windows runtime behavior have not been manually validated. Browser combinations beyond those checked locally have not been verified.
 
 ## Develop and release
 

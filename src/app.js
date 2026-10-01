@@ -355,7 +355,7 @@ async function folderDialog(dir){
   const dialog=$('#folder-dialog'),sequence=++folderSequence;
   let pickerController=null;
   if(!dialog.open)dialog.showModal();
-  dialog.innerHTML=`<div class="dialog-header"><div><h2 id="folder-title">Open a project</h2><p>Choose a folder on this computer.</p></div><button class="icon-button" id="close-dialog" aria-label="Close folder picker">${icon('close')}</button></div>${state.nativeFolderPicker?`<div class="native-folder-choice"><button class="primary" id="choose-native-folder">${icon('folder')} Choose in Finder</button><p id="native-folder-status" role="status">Browse your Mac and select the project folder.</p></div>`:''}<form id="path-form"><label for="folder-path">${state.nativeFolderPicker?'Or enter a folder path':'Folder path'}</label><div class="path-row"><input id="folder-path" placeholder="/Users/you/projects/my-app" value="${escape(dir||localStorage.getItem('atlas-last-path')||'')}"><button class="secondary" type="submit">Open</button></div></form><div id="folder-list" class="folder-list"><p>Loading folders…</p></div><div class="dialog-footer"><span>Ignored files, hidden files, and symlinks are skipped.</span><button class="text-button" id="use-example">Use the example project</button></div>`;
+  dialog.innerHTML=`<div class="dialog-header"><div><h2 id="folder-title">Open a project</h2><p>Choose a folder on this computer.</p></div><button class="icon-button" id="close-dialog" aria-label="Close folder picker">${icon('close')}</button></div>${state.nativeFolderPicker?`<div class="native-folder-choice"><button class="primary" id="choose-native-folder">${icon('folder')} Choose a folder</button><p id="native-folder-status" role="status">Browse your computer and select the project folder.</p></div>`:''}<form id="path-form"><label for="folder-path">${state.nativeFolderPicker?'Or enter a folder path':'Folder path'}</label><div class="path-row"><input id="folder-path" placeholder="Enter the full project folder path" value="${escape(dir||localStorage.getItem('atlas-last-path')||'')}"><button class="secondary" type="submit">Open</button></div></form><div id="folder-list" class="folder-list"><p>Loading folders…</p></div><div class="dialog-footer"><span>Ignored files, hidden files, and symlinks are skipped.</span><button class="text-button" id="use-example">Use the example project</button></div>`;
   $('#close-dialog').onclick=()=>dialog.close();
   const disableControls=disabled=>dialog.querySelectorAll('button:not(#close-dialog),input').forEach(control=>{control.disabled=disabled;});
   if($('#choose-native-folder'))$('#choose-native-folder').onclick=async()=>{
@@ -363,7 +363,7 @@ async function folderDialog(dir){
     const controller=new AbortController();pickerController=controller;
     const cancel=()=>controller.abort();
     dialog.addEventListener('close',cancel,{once:true});disableControls(true);
-    $('#native-folder-status').textContent='Choose a folder in the macOS window…';
+    $('#native-folder-status').textContent='Choose a folder in the system window…';
     try {
       const selected=await api('/api/folder-picker',{method:'POST',body:'{}',signal:controller.signal});
       if(controller.signal.aborted||!dialog.open||sequence!==folderSequence)return;
