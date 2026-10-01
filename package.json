@@ -1,0 +1,48 @@
+{
+  "name": "code-atlas",
+  "version": "0.1.0",
+  "description": "Local code reader and learning companion for Codex",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node server/index.mjs",
+    "dev": "npm run build && npm start",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "release:check": "npm run check && npm test && npm run build && node scripts/release.mjs",
+    "release:pack": "npm run release:check && node scripts/release.mjs --pack --source"
+  },
+  "files": [
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "THIRD_PARTY_NOTICES.md",
+    "docs/demo",
+    "examples/tiny-tasks",
+    "licenses",
+    "public",
+    "scripts/build.mjs",
+    "scripts/check.mjs",
+    "scripts/release.mjs",
+    "server",
+    "src",
+    "tests"
+  ],
+  "dependencies": {
+    "dompurify": "^3.2.7",
+    "highlight.js": "^11.11.1",
+    "ignore": "^7.0.5",
+    "marked": "^16.0.0",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "jsdom": "^29.1.1"
+  }
+}

@@ -1,0 +1,4 @@
+export const isCurrent=(record,revision)=>record.revision===revision;
+export function readNotebook(storage,id){try{const value=JSON.parse(storage.getItem('atlas-notebook-'+id)||'[]');return Array.isArray(value)?value.filter(r=>r&&typeof r.path==='string'&&typeof r.date==='string').slice(-100):[];}catch{return [];}}
+export function writeNotebook(storage,id,records){try{storage.setItem('atlas-notebook-'+id,JSON.stringify(records.slice(-100)));return true;}catch{return false;}}
+export function exportNotebook(name,records){return `# ${name} — reading notebook\n\nPersonal observations and practice attempts. These are not verified mastery scores.\n\n`+records.map(r=>`## ${r.path}${r.line?':'+r.line:''}\n\n${r.date} · source revision ${r.revision}\n\n${r.note||''}\n\n${r.attempt?'My attempt: '+r.attempt+'\n\nConfidence: '+(r.confidence||'Not recorded')+'\n\n':''}${r.answer?'Codex response (verify independently):\n\n'+r.answer+'\n\n':''}`).join('---\n\n');}

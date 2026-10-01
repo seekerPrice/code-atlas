@@ -1,0 +1,15 @@
+# Code Atlas demo
+
+[Watch the updated walkthrough](code-atlas-demo.mp4) · [View the poster](poster.jpg)
+
+The updated video follows the included Tiny Tasks example from finding an entry point to clicking a function for an explanation, previewing linked code, checking claims, practising a concept, and reopening a saved answer. Screen states were recaptured at 1920×1080 from the local app with this public example, using larger code and explanation text. Transitions, captions, and bounce animation were created for Code Atlas; no private project material is included. The approved soundtrack is "Inspired" by Kevin MacLeod, credited below and in the closing frame. AI waiting time is shortened and identified in the video.
+
+The evidence sequence distinguishes “AI suggestion,” “Source-supported · user checked,” and “Independently verified · user reported.” The assistant supplied the demonstration check records after inspecting source and separately running the example's validation tests. Code Atlas records these checks; it does not run them. The curated JavaScript practice is graded locally against an authored answer. The assistant supplied the demonstration response, which is not a claim about the user's proficiency.
+
+The original visuals and poster are part of the Code Atlas release under the repository's MIT license. The soundtrack retains its separate CC BY 4.0 license. The editable production workspace and raw captures are kept outside the public source export because they contain build tooling and intermediate files; they are not needed to use or redistribute the finished demo.
+
+Music: "Inspired" by Kevin MacLeod ([incompetech.com](https://incompetech.com/)), licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). [Original track, ISRC USUAN1600022](https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1600022). Changes: excerpt beginning at 16 seconds, volume normalized, fades added, and synchronized to the demonstration. Retain this credit and license link when sharing the video.
+
+The full video is 1920×1080 at 30 fps. Code text was increased from 12px to 20px and explanation text from 13px to 18px for the recording. App captures are shown at native size, without digital enlargement. The browser supplied JPEG captures; PNG intermediate frames avoid another JPEG compression stage before the final video encoding. The larger typography and line wrapping are presentation adjustments, not a new app setting. The original app stylesheet was restored after capture.
+
+The video was produced with Remotion using its official [Agent Skills guidance](https://www.remotion.dev/docs/ai/skills), including the [best-practices](https://github.com/remotion-dev/skills/blob/main/skills/remotion-best-practices/SKILL.md), [create](https://github.com/remotion-dev/skills/blob/main/skills/remotion-create/SKILL.md), and [markup](https://github.com/remotion-dev/skills/blob/main/skills/remotion-markup/SKILL.md) skills. Remotion has [separate terms for using its rendering software](https://www.remotion.dev/docs/license); those tools and skill texts are not distributed in this release.

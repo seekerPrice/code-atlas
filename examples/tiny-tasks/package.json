@@ -1,0 +1,10 @@
+{
+  "name": "Tiny Tasks",
+  "private": true,
+  "description": "A small example for learning to follow a request through an application.",
+  "dependencies": {
+    "next": "example",
+    "react": "example"
+  },
+  "type": "module"
+}

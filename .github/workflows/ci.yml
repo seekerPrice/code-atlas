@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    name: Node 22 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:check
+        if: runner.os != 'Windows'
+      - run: npm run check
+        if: runner.os == 'Windows'
+      - run: npm run build
+        if: runner.os == 'Windows'
+      - run: node scripts/release.mjs
+        if: runner.os == 'Windows'
+      - run: node --experimental-strip-types --test examples/tiny-tasks/lib/validation.test.ts
