@@ -18,13 +18,15 @@ Open [http://127.0.0.1:4317](http://127.0.0.1:4317). On macOS, `Start Code Atlas
 
 Click **Explore an example** to read Tiny Tasks. For your own project, click **Open a project** and select its source folder. Code Atlas indexes supported text files; it does not install dependencies or run the opened project. Use the file explorer, entry candidates, function links, reading path, feature search, and workspace map to explore without AI access. Click a function or select lines to ask Codex for an explanation. The Review, Improve, Verify, Practice, and Teach back modes guide deeper work.
 
+On macOS, **Choose in Finder** opens the system folder picker and loads the project you select. Cancelling keeps your current project open. You can also browse the folder list or enter a path; these options remain available on other platforms and if the native picker cannot open.
+
 [![Watch the Code Atlas demo](docs/demo/poster.jpg)](docs/demo/code-atlas-demo.mp4)
 
 [Watch the updated demo](docs/demo/code-atlas-demo.mp4) · [Demo notes](docs/demo/README.md)
 
 ## Codex and privacy
 
-AI features use your Codex CLI ChatGPT sign-in and its existing allowance. They need a compatible signed-in CLI and network access; plan limits and account billing still apply. Code Atlas does not use an API-key fallback, and you do not need a separate app subscription. Static source browsing works without Codex.
+AI features use your Codex CLI ChatGPT sign-in and its existing allowance. New AI requests use medium reasoning effort. They need a compatible signed-in CLI and network access; plan limits and account billing still apply. Code Atlas does not use an API-key fallback, and you do not need a separate app subscription. Static source browsing works without Codex.
 
 Indexing and source navigation run locally. When you ask Codex, selected source context is sent to OpenAI through the CLI, subject to your account's data policies. Context can include a bounded file list, symbol details, the selected file, and nearby related source. Do not open sensitive code unless you are permitted to send that context. The app does not read your stored Codex credentials.
 

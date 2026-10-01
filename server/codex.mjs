@@ -13,7 +13,7 @@ export function codexEnvironment(source=process.env) {
 }
 
 export function executionArgs(cwd) {
-  const settings=['forced_login_method="chatgpt"','model_provider="openai"','web_search="disabled"','project_doc_max_bytes=0','features.shell_tool=false','features.unified_exec=false','features.plugins=false','features.hooks=false','features.apps=false','features.multi_agent=false','features.browser_use=false','features.computer_use=false','features.image_generation=false','features.skill_search=false'];
+  const settings=['forced_login_method="chatgpt"','model_provider="openai"','model_reasoning_effort="medium"','web_search="disabled"','project_doc_max_bytes=0','features.shell_tool=false','features.unified_exec=false','features.plugins=false','features.hooks=false','features.apps=false','features.multi_agent=false','features.browser_use=false','features.computer_use=false','features.image_generation=false','features.skill_search=false'];
   return ['exec','--ignore-user-config','--ignore-rules','--ephemeral','--skip-git-repo-check','--sandbox','read-only','--json','--color','never','-C',cwd,'-c','approval_policy="never"',...settings.flatMap(s=>['-c',s]),'-'];
 }
 

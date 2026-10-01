@@ -14,14 +14,15 @@ import { discoverFeature, discoverTestEvidence } from './feature-map.mjs';
 import { parseCoaching } from './coaching.mjs';
 import { getThemes } from './themes.mjs';
 import { prepareExplanationContext, assertExplanationCurrent, listAnswersWithFreshness, changedFiles } from './dependency-cache.mjs';
+import { nativeFolderPicker } from './folder-picker.mjs';
 
 const base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const publicDir=path.join(base,'public');
 const MAX_BODY=256000;
 
-export function createServer({explain=explainWithCodex,cacheDirectory=null}={}) {
+export function createServer({explain=explainWithCodex,cacheDirectory=null,folderPicker=nativeFolderPicker}={}) {
   const token=randomBytes(32).toString('hex');
-  let project=null,busy=false,indexing=false;
+  let project=null,busy=false,indexing=false,pickingFolder=false;
   const cache=createAnswerStore({directory:cacheDirectory});
   const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
   async function body(req) {
@@ -38,13 +39,28 @@ export function createServer({explain=explainWithCodex,cacheDirectory=null}={}) 
     if(!hosts.includes(req.headers.host)|| (req.headers.origin&&!hosts.some(h=>req.headers.origin===`http://${h}`))) return send(res,403,{error:'Only the local Code Atlas window can access this app.'});
     const url=new URL(req.url,`http://${req.headers.host}`);
     try {
-      if(url.pathname==='/api/session'&&req.method==='GET')return send(res,200,{token});
+      if(url.pathname==='/api/session'&&req.method==='GET')return send(res,200,{token,nativeFolderPicker:Boolean(folderPicker.available)});
       if(url.pathname.startsWith('/api/')) {
         const supplied=req.headers['x-atlas-token'];
         if(typeof supplied!=='string'||!/^[a-f0-9]{64}$/.test(supplied)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(token)))return send(res,403,{error:'Refresh the app to reconnect your local session.'});
         if(url.pathname==='/api/status'&&req.method==='GET')return send(res,200,await loginStatus());
         if(url.pathname==='/api/themes'&&req.method==='GET')return send(res,200,await getThemes());
         if(url.pathname==='/api/login'&&req.method==='POST')return send(res,200,startLogin());
+        if(url.pathname==='/api/folder-picker'&&req.method==='POST') {
+          if(!folderPicker.available)return send(res,501,{error:'Use the folder list or enter a folder path on this computer.'});
+          if(pickingFolder)return send(res,409,{error:'A folder picker is already open. Choose a folder or cancel that window first.'});
+          if(busy||indexing)return send(res,409,{error:'Wait for the current operation before choosing another project.'});
+          const controller=new AbortController();
+          const cancel=()=>controller.abort();
+          res.on('close',cancel);pickingFolder=true;
+          try {
+            const selected=await folderPicker.choose({signal:controller.signal});
+            if(!res.destroyed)send(res,200,{path:selected,cancelled:selected===null});
+          } catch(error) {
+            if(!res.destroyed)send(res,400,{error:error.message});
+          } finally {pickingFolder=false;res.off('close',cancel);}
+          return;
+        }
         if(url.pathname==='/api/browse'&&req.method==='GET') {
           const dir=await realpath(url.searchParams.get('dir')||os.homedir());
           const entries=await readdir(dir,{withFileTypes:true});

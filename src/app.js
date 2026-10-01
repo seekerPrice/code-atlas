@@ -33,7 +33,7 @@ const icons={
 const icon=(name,cls='')=>`<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.file}</svg>`;
 const state={token:'',project:null,file:null,symbol:null,mode:'explain',view:'overview',status:null,busy:false,controller:null,history:[],selectedLine:null,auto:localStorage.getItem('atlas-auto')!=='false',read:new Set(),navigation:[],forward:[],filter:'',range:null,depth:'normal',journey:null,diff:null,changes:null,scope:'working',notebook:[],searchKind:'symbols',searchQuery:'',treeLimit:250,stale:false,focusCode:false};
 Object.assign(state,{comparison:null,feature:null,activeFeature:false,verification:null,testEvidence:null,learning:[],concept:'',peekSequence:0,arrivalReason:'Opened source'});
-let fileSequence=0,autoTimer,workSequence=0;
+let fileSequence=0,autoTimer,workSequence=0,folderSequence=0;
 let themeSettings=null;
 
 async function api(url,options={}) {
@@ -352,24 +352,47 @@ async function refreshProject(){
 }
 
 async function folderDialog(dir){
-  const dialog=$('#folder-dialog');
+  const dialog=$('#folder-dialog'),sequence=++folderSequence;
+  let pickerController=null;
   if(!dialog.open)dialog.showModal();
-  dialog.innerHTML=`<div class="dialog-header"><div><h2 id="folder-title">Open a project</h2><p>Choose a folder on this computer.</p></div><button class="icon-button" id="close-dialog" aria-label="Close folder picker">${icon('close')}</button></div><form id="path-form"><label for="folder-path">Folder path</label><div class="path-row"><input id="folder-path" placeholder="/Users/you/projects/my-app" value="${escape(dir||localStorage.getItem('atlas-last-path')||'')}"><button class="primary" type="submit">Open</button></div></form><div id="folder-list" class="folder-list"><p>Loading folders…</p></div><div class="dialog-footer"><span>Ignored files, hidden files, and symlinks are skipped.</span><button class="text-button" id="use-example">Use the example project</button></div>`;
+  dialog.innerHTML=`<div class="dialog-header"><div><h2 id="folder-title">Open a project</h2><p>Choose a folder on this computer.</p></div><button class="icon-button" id="close-dialog" aria-label="Close folder picker">${icon('close')}</button></div>${state.nativeFolderPicker?`<div class="native-folder-choice"><button class="primary" id="choose-native-folder">${icon('folder')} Choose in Finder</button><p id="native-folder-status" role="status">Browse your Mac and select the project folder.</p></div>`:''}<form id="path-form"><label for="folder-path">${state.nativeFolderPicker?'Or enter a folder path':'Folder path'}</label><div class="path-row"><input id="folder-path" placeholder="/Users/you/projects/my-app" value="${escape(dir||localStorage.getItem('atlas-last-path')||'')}"><button class="secondary" type="submit">Open</button></div></form><div id="folder-list" class="folder-list"><p>Loading folders…</p></div><div class="dialog-footer"><span>Ignored files, hidden files, and symlinks are skipped.</span><button class="text-button" id="use-example">Use the example project</button></div>`;
   $('#close-dialog').onclick=()=>dialog.close();
+  const disableControls=disabled=>dialog.querySelectorAll('button:not(#close-dialog),input').forEach(control=>{control.disabled=disabled;});
+  if($('#choose-native-folder'))$('#choose-native-folder').onclick=async()=>{
+    if(pickerController)return;
+    const controller=new AbortController();pickerController=controller;
+    const cancel=()=>controller.abort();
+    dialog.addEventListener('close',cancel,{once:true});disableControls(true);
+    $('#native-folder-status').textContent='Choose a folder in the macOS window…';
+    try {
+      const selected=await api('/api/folder-picker',{method:'POST',body:'{}',signal:controller.signal});
+      if(controller.signal.aborted||!dialog.open||sequence!==folderSequence)return;
+      if(selected.cancelled){$('#native-folder-status').textContent='Selection cancelled. Choose a folder when you are ready.';return;}
+      $('#folder-path').value=selected.path;
+      $('#native-folder-status').textContent='Reading the selected project…';
+      await openProject({path:selected.path});
+    } catch(error) {
+      if(!controller.signal.aborted&&dialog.open&&sequence===folderSequence)$('#native-folder-status').textContent=error.message;
+    } finally {
+      dialog.removeEventListener('close',cancel);pickerController=null;
+      if(dialog.open&&sequence===folderSequence)disableControls(false);
+    }
+  };
   $('#path-form').onsubmit=e=>{e.preventDefault();safe(()=>openProject({path:$('#folder-path').value.trim()}))();};
   $('#use-example').onclick=safe(()=>openProject({demo:true}));
   try{
     const data=await api('/api/browse'+(dir?'?dir='+encodeURIComponent(dir):''));
-    if(!dialog.open)return;
+    if(!dialog.open||sequence!==folderSequence)return;
     $('#folder-list').innerHTML=`<div class="browser-path"><button class="icon-button" id="parent-folder" aria-label="Parent folder">${icon('back')}</button><span>${escape(data.path)}</span><button class="text-button" id="select-folder">Open this folder</button></div>${data.folders.map(f=>`<button class="folder-row" data-folder="${escape(f.path)}">${icon('folder')}<span>${escape(f.name)}</span>${icon('chevron')}</button>`).join('')||'<p class="tree-empty">No subfolders.</p>'}`;
     $('#parent-folder').onclick=safe(()=>folderDialog(data.parent));$('#select-folder').onclick=safe(()=>openProject({path:data.path}));
     document.querySelectorAll('[data-folder]').forEach(b=>b.onclick=safe(()=>folderDialog(b.dataset.folder)));
-  }catch(e){$('#folder-list').innerHTML=`<p class="notice">${escape(e.message)}</p>`;}
+    if(pickerController)disableControls(true);
+  }catch(e){if(dialog.open&&sequence===folderSequence)$('#folder-list').innerHTML=`<p class="notice">${escape(e.message)}</p>`;}
 }
 
 async function init(){
   shell();renderWelcome();
-  try{const session=await fetch('/api/session').then(r=>r.json());state.token=session.token;await Promise.all([updateStatus(),loadThemes()]);const p=await api('/api/project');if(p){state.project=p;state.notebook=readNotebook(localStorage,p.id);state.learning=loadLearning(localStorage,p.id);updateProjectChrome();renderMain();}else{const last=localStorage.getItem('atlas-last-path');if(last)await openProject({path:last});}}catch(e){notify('Cannot reach the local server. Start Code Atlas, then reload.');}
+  try{const session=await fetch('/api/session').then(r=>r.json());state.token=session.token;state.nativeFolderPicker=Boolean(session.nativeFolderPicker);await Promise.all([updateStatus(),loadThemes()]);const p=await api('/api/project');if(p){state.project=p;state.notebook=readNotebook(localStorage,p.id);state.learning=loadLearning(localStorage,p.id);updateProjectChrome();renderMain();}else{const last=localStorage.getItem('atlas-last-path');if(last)await openProject({path:last});}}catch(e){notify('Cannot reach the local server. Start Code Atlas, then reload.');}
   window.addEventListener('focus',()=>{if((localStorage.getItem('atlas-theme')||'vscode')==='vscode')loadThemes();checkFreshness();});
 }
 init();

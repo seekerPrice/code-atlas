@@ -12,6 +12,7 @@ test('removes API billing credentials while retaining normal ChatGPT credential 
   assert.equal(env.CODEX_API_BASE_URL,undefined);
   const args = executionArgs('/tmp/empty');
   assert(args.includes('forced_login_method="chatgpt"'));
+  assert(args.includes('model_reasoning_effort="medium"'));
   assert(args.includes('--ignore-user-config'));
   assert(args.includes('read-only'));
   assert(args.includes('features.shell_tool=false'));
